@@ -306,28 +306,49 @@ public class VentanaMatrizHilos extends JFrame {
     // -----------------------------------------------------------------
     private void iniciarRebotador() {
         System.out.println("Evento: Iniciar Rebotador");
+        if (hreb == null || !hreb.isAlive()) {
+            hreb = new HiloRebotador(matriz);
+            hreb.start();
+        } else {
+            hreb.reanudarHilo();
+        }
     }
-
     private void pausarRebotador() {
         System.out.println("Evento: Pausar Rebotador");
+        if (hreb != null) {
+            hreb.pausarHilo();
+        }
     }
-
     private void terminarRebotador() {
         System.out.println("Evento: Terminar Rebotador");
+        if (hreb != null) {
+            hreb.terminarHilo();
+            hreb = null;
+        }
     }
-
     // -----------------------------------------------------------------
     // Métodos privados para manejo de eventos (Clima)
     // -----------------------------------------------------------------
     private void iniciarClima() {
+        if (hcli == null || !hcli.isAlive()) {
+            hcli = new HiloClima(matriz);
+            hcli.start(); // Arranca el hilo (se queda en estado dormido inicial)
+        }
+        hcli.iniciarHilo();
         System.out.println("Evento: Iniciar Clima");
     }
 
     private void pausarClima() {
+        if (hcli != null) {
+            hcli.pausarHilo();
+        }
         System.out.println("Evento: Pausar Clima");
     }
 
     private void terminarClima() {
+        if (hcli != null) {
+            hcli.terminarHilo();
+        }
         System.out.println("Evento: Terminar Clima");
     }
 
