@@ -10,11 +10,10 @@ public class HiloRebotador extends Thread {
     private volatile boolean ejecutando = true;
     private volatile boolean enPausa = false;
 
-    // Posición inicial y dirección diagonal
     private int fila = 0;
     private int col = 0;
-    private int df = 1;  // Dirección en filas (1: abajo, -1: arriba)
-    private int dc = 1;  // Dirección en columnas (1: derecha, -1: izquierda)
+    private int df = 1; 
+    private int dc = 1;  
 
     public HiloRebotador(JLabel[][] matriz) {
         this.matriz = matriz;
@@ -23,7 +22,6 @@ public class HiloRebotador extends Thread {
     @Override
     public void run() {
         while (ejecutando) {
-            // Manejo de Pausa
             synchronized (this) {
                 while (enPausa) {
                     try {
@@ -37,20 +35,18 @@ public class HiloRebotador extends Thread {
             int fActual = fila;
             int cActual = col;
 
-            // Actualización segura en la interfaz Swing usando EDT (Lambda)
             SwingUtilities.invokeLater(() -> {
                 JLabel cell = matriz[fActual][cActual];
                 cell.setText("@");
-                cell.setForeground(Color.MAGENTA); // Color característico para la @ rebotadora
+                cell.setForeground(Color.MAGENTA); 
             });
 
             try {
-                Thread.sleep(300); // Velocidad del movimiento
+                Thread.sleep(300); 
             } catch (InterruptedException e) {
                 if (!ejecutando) break;
             }
 
-            // Limpiar casilla actual antes de mover
             SwingUtilities.invokeLater(() -> {
                 JLabel cell = matriz[fActual][cActual];
                 if ("@".equals(cell.getText())) {
@@ -59,16 +55,14 @@ public class HiloRebotador extends Thread {
                 }
             });
 
-            // Calcular siguiente posición
             int sigFila = fila + df;
             int sigCol = col + dc;
 
-            // Detección de rebotador (bordes)
             if (sigFila < 0 || sigFila >= 15) {
-                df = -df; // Invertir sentido vertical
+                df = -df; 
             }
             if (sigCol < 0 || sigCol >= 15) {
-                dc = -dc; // Invertir sentido horizontal
+                dc = -dc; 
             }
 
             fila += df;
@@ -76,7 +70,6 @@ public class HiloRebotador extends Thread {
         }
     }
 
-    // Métodos de control para la Ventana
     public void pausarHilo() {
         enPausa = true;
     }
