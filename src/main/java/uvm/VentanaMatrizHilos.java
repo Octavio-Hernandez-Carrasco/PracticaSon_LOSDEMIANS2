@@ -299,14 +299,25 @@ public class VentanaMatrizHilos extends JFrame {
     // Métodos privados para manejo de eventos (Clima)
     // -----------------------------------------------------------------
     private void iniciarClima() {
+        if (hcli == null || !hcli.isAlive()) {
+            hcli = new HiloClima(matriz);
+            hcli.start(); // Arranca el hilo (se queda en estado dormido inicial)
+        }
+        hcli.iniciarHilo();
         System.out.println("Evento: Iniciar Clima");
     }
 
     private void pausarClima() {
+        if (hcli != null) {
+            hcli.pausarHilo();
+        }
         System.out.println("Evento: Pausar Clima");
     }
 
     private void terminarClima() {
+        if (hcli != null) {
+            hcli.terminarHilo();
+        }
         System.out.println("Evento: Terminar Clima");
     }
 
