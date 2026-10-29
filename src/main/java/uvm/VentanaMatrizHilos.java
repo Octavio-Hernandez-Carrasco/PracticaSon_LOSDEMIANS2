@@ -14,6 +14,8 @@ public class VentanaMatrizHilos extends JFrame {
     // Matriz de 15x15 JLabels (Recurso Compartido)
     private JLabel[][] matriz = new JLabel[15][15];
 
+    private JPanel panelCazador;
+
     // Botones Hilo Serpiente
     private JButton btIniciarS;
     private JButton btPausaS;
@@ -88,7 +90,7 @@ public class VentanaMatrizHilos extends JFrame {
         panelSerpiente.add(btTerminarS);
 
         // Subpanel Cazador
-        JPanel panelCazador = new JPanel(new FlowLayout());
+        panelCazador = new JPanel(new FlowLayout());
         panelCazador.setBorder(BorderFactory.createTitledBorder("Hilo Cazador"));
         btIniciarC = new JButton("Iniciar");
         btPausaC = new JButton("Pausa");
@@ -269,15 +271,34 @@ public class VentanaMatrizHilos extends JFrame {
     // Métodos privados para manejo de eventos (Cazador)
     // -----------------------------------------------------------------
     private void iniciarCazador() {
-        System.out.println("Evento: Iniciar Cazador");
+        if (hcaz != null && hcaz.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Cazador ya está activo");
+            return;
+        }
+        hcaz = new HiloCazador(matriz, panelCazador, 60);
+        hcaz.start();
+        btPausaC.setText("Pausa");
     }
 
     private void pausarCazador() {
-        System.out.println("Evento: Pausar Cazador");
+        if (hcaz == null || !hcaz.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        boolean pausar = !hcaz.isPausado();
+        hcaz.setPausado(pausar);
+        btPausaC.setText(pausar ? "Continuar" : "Pausa");
     }
 
     private void terminarCazador() {
-        System.out.println("Evento: Terminar Cazador");
+        if (hcaz == null || !hcaz.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        hcaz.setTerminado(true);
+        btPausaC.setText("Pausa");
     }
 
     // -----------------------------------------------------------------
@@ -314,15 +335,34 @@ public class VentanaMatrizHilos extends JFrame {
     // Métodos privados para manejo de eventos (Limpiador)
     // -----------------------------------------------------------------
     private void iniciarLimpiador() {
-        System.out.println("Evento: Iniciar Limpiador");
+        if (hlim != null && hlim.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Limpiador ya está activo");
+            return;
+        }
+        hlim = new HiloLimpiador(matriz, 500);
+        hlim.start();
+        btPausaL.setText("Pausa");
     }
 
     private void pausarLimpiador() {
-        System.out.println("Evento: Pausar Limpiador");
+        if (hlim == null || !hlim.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        boolean pausar = !hlim.isPausado();
+        hlim.setPausado(pausar);
+        btPausaL.setText(pausar ? "Continuar" : "Pausa");
     }
 
     private void terminarLimpiador() {
-        System.out.println("Evento: Terminar Limpiador");
+        if (hlim == null || !hlim.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        hlim.setTerminado(true);
+        btPausaL.setText("Pausa");
     }
 
     // Métodos auxiliares para acceso de los estudiantes
