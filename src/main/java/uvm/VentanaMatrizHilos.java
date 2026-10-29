@@ -285,16 +285,26 @@ public class VentanaMatrizHilos extends JFrame {
     // -----------------------------------------------------------------
     private void iniciarRebotador() {
         System.out.println("Evento: Iniciar Rebotador");
+        if (hreb == null || !hreb.isAlive()) {
+            hreb = new HiloRebotador(matriz);
+            hreb.start();
+        } else {
+            hreb.reanudarHilo();
+        }
     }
-
     private void pausarRebotador() {
         System.out.println("Evento: Pausar Rebotador");
+        if (hreb != null) {
+            hreb.pausarHilo();
+        }
     }
-
     private void terminarRebotador() {
         System.out.println("Evento: Terminar Rebotador");
+        if (hreb != null) {
+            hreb.terminarHilo();
+            hreb = null;
+        }
     }
-
     // -----------------------------------------------------------------
     // Métodos privados para manejo de eventos (Clima)
     // -----------------------------------------------------------------
