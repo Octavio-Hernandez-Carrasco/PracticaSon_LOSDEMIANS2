@@ -256,15 +256,53 @@ public class VentanaMatrizHilos extends JFrame {
     // Métodos privados para manejo de eventos (Serpiente)
     // -----------------------------------------------------------------
     private void iniciarSerpiente() {
-        System.out.println("Evento: Iniciar Serpiente");
+        if (hser != null && hser.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Serpiente ya está activo");
+            return;
+        }
+
+        int fila = 0;
+        int col = 0;
+        String r = JOptionPane.showInputDialog(this,
+                "¿En qué celda empieza? (fila,columna del 1 al 15)", "1,1");
+        if (r == null) return;
+        try {
+            String[] partes = r.split(",");
+            fila = Integer.parseInt(partes[0].trim()) - 1;
+            col = Integer.parseInt(partes[1].trim()) - 1;
+            if (fila < 0 || fila >= 15 || col < 0 || col >= 15) {
+                throw new IllegalArgumentException();
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Celda no válida, empieza en 1,1");
+            fila = 0;
+            col = 0;
+        }
+
+        hser = new HiloSerpiente(matriz, 60, fila, col);
+        hser.start();
+        btPausaS.setText("Pausa");
     }
 
     private void pausarSerpiente() {
-        System.out.println("Evento: Pausar Serpiente");
+        if (hser == null || !hser.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        boolean pausar = !hser.isPausado();
+        hser.setPausado(pausar);
+        btPausaS.setText(pausar ? "Continuar" : "Pausa");
     }
 
     private void terminarSerpiente() {
-        System.out.println("Evento: Terminar Serpiente");
+        if (hser == null || !hser.isAlive()) {
+            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", "Alerta",
+                    JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        hser.setTerminado(true);
+        btPausaS.setText("Pausa");
     }
 
     // -----------------------------------------------------------------
