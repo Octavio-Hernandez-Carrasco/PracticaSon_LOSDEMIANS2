@@ -4,9 +4,9 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import java.awt.Color;
 
-
 public class HiloClima extends Thread {
-    private JLabel[][] matriz;
+    private final JLabel[][] matriz;
+    private final Object candado = new Object();
 
     private volatile boolean activo = false;      
     private volatile boolean pausado = false;
@@ -16,79 +16,87 @@ public class HiloClima extends Thread {
         this.matriz = matriz;
     }
 
-    public synchronized void iniciarHilo() {
-        this.activo = true;
-        this.pausado = false;
-        notifyAll(); 
+    public void iniciarHilo() {
+        synchronized (candado) {
+            this.activo = true;
+            this.pausado = false;
+            candado.notifyAll();
+        }
     }
 
-    public synchronized void pausarHilo() {
-        this.pausado = true;
+    public void pausarHilo() {
+        synchronized (candado) {
+            this.pausado = true;
+        }
     }
 
-    public synchronized void reanudarHilo() {
-        this.pausado = false;
-        notifyAll();
+    public void reanudarHilo() {
+        synchronized (candado) {
+            this.pausado = false;
+            candado.notifyAll();
+        }
     }
 
-    public synchronized void terminarHilo() {
-        this.terminado = true;
-        this.activo = true;
-        this.pausado = false;
-        notifyAll(); 
+    public void terminarHilo() {
+        synchronized (candado) {
+            this.terminado = true;
+            this.activo = true;
+            this.pausado = false;
+            candado.notifyAll();
+        }
     }
 
     @Override
     public void run() {
-        while (!terminado) {
-            synchronized (this) {
-                while (!activo && !terminado) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
-                }
-            }
+        try {
+            while (!terminado) {
+                esperarActivacion();
+                if (terminado) break;
 
-            if (terminado) break;
-
-            try {
-                SwingUtilities.invokeLater(() -> {
-                    for (int i = 0; i < matriz.length; i++) {
-                        for (int j = 0; j < matriz[i].length; j++) {
-                            JLabel lbl = matriz[i][j];
-                            Color colorActual = lbl.getForeground();
-
-                            if (Color.BLACK.equals(colorActual)) {
-                                lbl.setForeground(Color.RED);
-                            } else if (Color.RED.equals(colorActual)) {
-                                lbl.setForeground(Color.BLUE);
-                            } else if (Color.BLUE.equals(colorActual)) {
-                                lbl.setForeground(Color.BLACK);
-                            }
-                        }
-                    }
-                });
-
+                actualizarColoresMatriz();
                 Thread.sleep(1000);
 
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                break;
+                revisarPausa();
             }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+    }
 
-            synchronized (this) {
-                while (pausado && !terminado) {
-                    try {
-                        wait();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        break;
-                    }
+    private void esperarActivacion() throws InterruptedException {
+        synchronized (candado) {
+            while (!activo && !terminado) {
+                candado.wait();
+            }
+        }
+    }
+
+    private void revisarPausa() throws InterruptedException {
+        synchronized (candado) {
+            while (pausado && !terminado) {
+                candado.wait();
+            }
+        }
+    }
+
+    private void actualizarColoresMatriz() {
+        SwingUtilities.invokeLater(() -> {
+            for (JLabel[] fila : matriz) {
+                for (JLabel lbl : fila) {
+                    rotarColor(lbl);
                 }
             }
+        });
+    }
+
+    private void rotarColor(JLabel lbl) {
+        Color colorActual = lbl.getForeground();
+        if (Color.BLACK.equals(colorActual)) {
+            lbl.setForeground(Color.RED);
+        } else if (Color.RED.equals(colorActual)) {
+            lbl.setForeground(Color.BLUE);
+        } else if (Color.BLUE.equals(colorActual)) {
+            lbl.setForeground(Color.BLACK);
         }
     }
 }
