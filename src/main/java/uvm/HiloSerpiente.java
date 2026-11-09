@@ -1,98 +1,85 @@
 package uvm;
 
+import java.awt.Color;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import java.awt.Color;
 
 public class HiloSerpiente extends Thread {
-
+    
     private final JLabel[][] matriz;
     private final int periodo;
     private final int inicio;
+    
+    private boolean pausado = false;
+    private boolean terminado = false;
     private final Object candado = new Object();
-
-    private volatile boolean pausado = false;
-    private volatile boolean terminado = false;
-
+    
     public HiloSerpiente(JLabel[][] matriz, int periodo, int filaIni, int colIni) {
-        super("Serpiente");
         this.matriz = matriz;
         this.periodo = periodo;
-        int tam = matriz.length;
+        
         if (filaIni % 2 == 0) {
-            inicio = filaIni * tam + colIni;
-        } else {
-            inicio = filaIni * tam + (tam - 1 - colIni);
+            this.inicio = filaIni * 15 + colIni;
+        }
+        else
+        {
+            this.inicio = filaIni * 15 + (14 - colIni);
         }
     }
-
-    public boolean isPausado() {
-        return pausado;
-    }
-
-    public boolean isTerminado() {
-        return terminado;
-    }
-
-    public void setPausado(boolean x) {
+    
+    public void setPausado(boolean pausado) {
         synchronized (candado) {
-            pausado = x;
+            this.pausado = pausado;
             if (!pausado) {
                 candado.notifyAll();
             }
         }
     }
-
-    public void setTerminado(boolean x) {
-        synchronized (candado) {
-            terminado = x;
-            candado.notifyAll();
-        }
-        if (x) {
-            interrupt();
-        }
+    
+    public void setTerminado(boolean terminado) {
+        this.terminado = terminado;
+        this.interrupt();
     }
-
-    @Override
-    public void run() {
-        int tam = matriz.length;
-        try {
-            while (!terminado) {
-                int numero = 1;
-                for (int paso = 0; paso < tam * tam && !terminado; paso++) {
-                    revisarPausa();
-
-                    int k = (inicio + paso) % (tam * tam);
-                    int i = k / tam;
-                    int j;
-                    if (i % 2 == 0) {
-                        j = k % tam;
-                    } else {
-                        j = tam - 1 - (k % tam);
-                    }
-
-                    JLabel celda = matriz[i][j];
-                    String texto = String.valueOf(numero);
-                    numero++;
-
-                    synchronized (matriz) {
-                        SwingUtilities.invokeLater(() -> {
-                            celda.setText(texto);
-                            celda.setForeground(Color.BLUE);
-                        });
-                    }
-                    sleep(periodo);
-                }
-            }
-        } catch (InterruptedException ex) {
-            // nos pidieron terminar
-        }
-    }
-
+    
     private void revisarPausa() throws InterruptedException {
         synchronized (candado) {
-            while (pausado && !terminado) {
+            while (pausado) {
                 candado.wait();
+            }
+        }
+    }
+    
+    private int[] calcularCoordenadaSerpiente(int k) {
+        int i = k / 15;
+        int j = (i % 2 == 0) ? (k % 15) : (14 - (k % 15));
+        return new int[]{i, j};
+    }
+    
+    @Override
+    public void run() {
+        int contador = 1;
+        int totalCeldas = 15 * 15;
+        for (int k = inicio; k &lt; totalCeldas &amp;&amp; !terminado; k++) {
+            try {
+                revisarPausa();
+                
+                int[] coords = calcularCoordenadaSerpiente(k);
+                int fila = coords[0];
+                int columna = coords[1];
+                int numeroAEscribir = contador++;
+                
+                SwingUtilities.invokeLater(() ->; {
+                    JLabel celda = matriz[fila][columna];
+                    celda.setForeground(Color.BLUE);
+                    celda.setText(String.valueOf(numeroAEscribir));
+                });
+                
+                Thread.sleep(periodo);
+            
+            }
+            catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                break;
             }
         }
     }
