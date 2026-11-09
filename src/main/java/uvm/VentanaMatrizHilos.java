@@ -1,42 +1,57 @@
 package uvm;
-import javax.swing.*;
-import java.awt.*;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.logging.Logger;
 
 public class VentanaMatrizHilos extends JFrame {
-    HiloCazador hcaz;
-    HiloClima hcli;
-    HiloLimpiador hlim;
-    HiloRebotador hreb;
-    HiloSerpiente hser;
 
-    // Matriz de 15x15 JLabels (Recurso Compartido)
-    private JLabel[][] matriz = new JLabel[15][15];
+    private static final Logger LOGGER = Logger.getLogger(VentanaMatrizHilos.class.getName());
+    private static final int TAM_MATRIZ = 15;
+    private static final String TXT_INICIAR = "Iniciar";
+    private static final String TXT_PAUSA = "Pausa";
+    private static final String TXT_TERMINAR = "Terminar";
+    private static final String TXT_CONTINUAR = "Continuar";
+    private static final String TXT_ALERTA = "Alerta";
 
+    private transient HiloCazador hcaz;
+    private transient HiloClima hcli;
+    private transient HiloLimpiador hlim;
+    private transient HiloRebotador hreb;
+    private transient HiloSerpiente hser;
+
+    private final JLabel[][] matriz = new JLabel[TAM_MATRIZ][TAM_MATRIZ];
     private JPanel panelCazador;
 
-    // Botones Hilo Serpiente
     private JButton btIniciarS;
     private JButton btPausaS;
     private JButton btTerminarS;
 
-    // Botones Hilo Cazador
     private JButton btIniciarC;
     private JButton btPausaC;
     private JButton btTerminarC;
 
-    // Botones Hilo Rebotador
     private JButton btIniciarR;
     private JButton btPausaR;
     private JButton btTerminarR;
 
-    // Botones Hilo Clima
     private JButton btIniciarCl;
     private JButton btPausaCl;
     private JButton btTerminarCl;
 
-    // Botones Hilo Limpiador
     private JButton btIniciarL;
     private JButton btPausaL;
     private JButton btTerminarL;
@@ -45,109 +60,105 @@ public class VentanaMatrizHilos extends JFrame {
         super("Práctica de Concurrencia - Matriz Compartida");
         inicializarGUI();
         asociarEventos();
-        
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         pack();
-        setLocationRelativeTo(null); // Centrar en pantalla
+        setLocationRelativeTo(null);
     }
 
     private void inicializarGUI() {
         setLayout(new BorderLayout(10, 10));
+        add(crearPanelMatriz(), BorderLayout.CENTER);
+        add(crearPanelNorte(), BorderLayout.NORTH);
+        add(crearPanelSur(), BorderLayout.SOUTH);
+        add(crearPanelOeste(), BorderLayout.WEST);
+    }
 
-        // -----------------------------------------------------------------
-        // CENTRO: Matriz 15x15 JLabels
-        // -----------------------------------------------------------------
-        JPanel panelMatriz = new JPanel(new GridLayout(15, 15, 2, 2));
+    private JPanel crearPanelMatriz() {
+        JPanel panelMatriz = new JPanel(new GridLayout(TAM_MATRIZ, TAM_MATRIZ, 2, 2));
         panelMatriz.setBorder(BorderFactory.createTitledBorder("Matriz Compartida (15x15)"));
-        
-        for (int fila = 0; fila < 15; fila++) {
-            for (int col = 0; col < 15; col++) {
+
+        for (int fila = 0; fila < TAM_MATRIZ; fila++) {
+            for (int col = 0; col < TAM_MATRIZ; col++) {
                 JLabel lbl = new JLabel("-", SwingConstants.CENTER);
                 lbl.setOpaque(true);
                 lbl.setBackground(Color.WHITE);
                 lbl.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
                 lbl.setFont(new Font("Monospaced", Font.BOLD, 18));
-                
+
                 matriz[fila][col] = lbl;
                 panelMatriz.add(lbl);
             }
         }
-        add(panelMatriz, BorderLayout.CENTER);
+        return panelMatriz;
+    }
 
-        // -----------------------------------------------------------------
-        // NORTE: Paneles Serpiente y Cazador
-        // -----------------------------------------------------------------
+    private JPanel crearPanelNorte() {
         JPanel panelNorte = new JPanel(new GridLayout(1, 2, 5, 5));
 
-        // Subpanel Serpiente
         JPanel panelSerpiente = new JPanel(new FlowLayout());
         panelSerpiente.setBorder(BorderFactory.createTitledBorder("Hilo Serpiente"));
-        btIniciarS = new JButton("Iniciar");
-        btPausaS = new JButton("Pausa");
-        btTerminarS = new JButton("Terminar");
+        btIniciarS = new JButton(TXT_INICIAR);
+        btPausaS = new JButton(TXT_PAUSA);
+        btTerminarS = new JButton(TXT_TERMINAR);
         panelSerpiente.add(btIniciarS);
         panelSerpiente.add(btPausaS);
         panelSerpiente.add(btTerminarS);
 
-        // Subpanel Cazador
         panelCazador = new JPanel(new FlowLayout());
         panelCazador.setBorder(BorderFactory.createTitledBorder("Hilo Cazador"));
-        btIniciarC = new JButton("Iniciar");
-        btPausaC = new JButton("Pausa");
-        btTerminarC = new JButton("Terminar");
+        btIniciarC = new JButton(TXT_INICIAR);
+        btPausaC = new JButton(TXT_PAUSA);
+        btTerminarC = new JButton(TXT_TERMINAR);
         panelCazador.add(btIniciarC);
         panelCazador.add(btPausaC);
         panelCazador.add(btTerminarC);
 
         panelNorte.add(panelSerpiente);
         panelNorte.add(panelCazador);
-        add(panelNorte, BorderLayout.NORTH);
+        return panelNorte;
+    }
 
-        // -----------------------------------------------------------------
-        // SUR: Paneles Rebotador y Clima
-        // -----------------------------------------------------------------
+    private JPanel crearPanelSur() {
         JPanel panelSur = new JPanel(new GridLayout(1, 2, 5, 5));
 
-        // Subpanel Rebotador
         JPanel panelRebotador = new JPanel(new FlowLayout());
         panelRebotador.setBorder(BorderFactory.createTitledBorder("Hilo Rebotador"));
-        btIniciarR = new JButton("Iniciar");
-        btPausaR = new JButton("Pausa");
-        btTerminarR = new JButton("Terminar");
+        btIniciarR = new JButton(TXT_INICIAR);
+        btPausaR = new JButton(TXT_PAUSA);
+        btTerminarR = new JButton(TXT_TERMINAR);
         panelRebotador.add(btIniciarR);
         panelRebotador.add(btPausaR);
         panelRebotador.add(btTerminarR);
 
-        // Subpanel Clima
         JPanel panelClima = new JPanel(new FlowLayout());
         panelClima.setBorder(BorderFactory.createTitledBorder("Hilo Clima"));
-        btIniciarCl = new JButton("Iniciar");
-        btPausaCl = new JButton("Pausa");
-        btTerminarCl = new JButton("Terminar");
+        btIniciarCl = new JButton(TXT_INICIAR);
+        btPausaCl = new JButton(TXT_PAUSA);
+        btTerminarCl = new JButton(TXT_TERMINAR);
         panelClima.add(btIniciarCl);
         panelClima.add(btPausaCl);
         panelClima.add(btTerminarCl);
 
         panelSur.add(panelRebotador);
         panelSur.add(panelClima);
-        add(panelSur, BorderLayout.SOUTH);
+        return panelSur;
+    }
 
-        // -----------------------------------------------------------------
-        // WEST: Panel Limpiador (Botones en Vertical)
-        // -----------------------------------------------------------------
+    private JPanel crearPanelOeste() {
         JPanel panelLimpiador = new JPanel(new GridLayout(3, 1, 5, 5));
         panelLimpiador.setBorder(BorderFactory.createTitledBorder("Limpiador"));
-        btIniciarL = new JButton("Iniciar");
-        btPausaL = new JButton("Pausa");
-        btTerminarL = new JButton("Terminar");
-        
+        btIniciarL = new JButton(TXT_INICIAR);
+        btPausaL = new JButton(TXT_PAUSA);
+        btTerminarL = new JButton(TXT_TERMINAR);
+
         panelLimpiador.add(btIniciarL);
         panelLimpiador.add(btPausaL);
         panelLimpiador.add(btTerminarL);
 
         JPanel panelWestContenedor = new JPanel(new FlowLayout(FlowLayout.CENTER));
         panelWestContenedor.add(panelLimpiador);
-        add(panelWestContenedor, BorderLayout.WEST);
+        return panelWestContenedor;
     }
 
     private void asociarEventos() {
@@ -351,12 +362,14 @@ public class VentanaMatrizHilos extends JFrame {
             hreb.reanudarHilo();
         }
     }
+
     private void pausarRebotador() {
         System.out.println("Evento: Pausar Rebotador");
         if (hreb != null) {
             hreb.pausarHilo();
         }
     }
+
     private void terminarRebotador() {
         System.out.println("Evento: Terminar Rebotador");
         if (hreb != null) {
@@ -364,13 +377,14 @@ public class VentanaMatrizHilos extends JFrame {
             hreb = null;
         }
     }
+
     // -----------------------------------------------------------------
     // Métodos privados para manejo de eventos (Clima)
     // -----------------------------------------------------------------
     private void iniciarClima() {
         if (hcli == null || !hcli.isAlive()) {
             hcli = new HiloClima(matriz);
-            hcli.start(); // Arranca el hilo (se queda en estado dormido inicial)
+            hcli.start();
         }
         hcli.iniciarHilo();
         System.out.println("Evento: Iniciar Clima");
@@ -424,9 +438,7 @@ public class VentanaMatrizHilos extends JFrame {
         btPausaL.setText("Pausa");
     }
 
-    // Métodos auxiliares para acceso de los estudiantes
     public JLabel[][] getMatrizLabels() {
         return matriz;
     }
-
 }
