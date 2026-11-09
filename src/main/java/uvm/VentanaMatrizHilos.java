@@ -13,8 +13,6 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.logging.Logger;
 
 public class VentanaMatrizHilos extends JFrame {
@@ -162,105 +160,25 @@ public class VentanaMatrizHilos extends JFrame {
     }
 
     private void asociarEventos() {
-        // Eventos Hilo Serpiente
-        btIniciarS.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                iniciarSerpiente();
-            }
-        });
-        btPausaS.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pausarSerpiente();
-            }
-        });
-        btTerminarS.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                terminarSerpiente();
-            }
-        });
+        btIniciarS.addActionListener(e -> iniciarSerpiente());
+        btPausaS.addActionListener(e -> pausarSerpiente());
+        btTerminarS.addActionListener(e -> terminarSerpiente());
 
-        // Eventos Hilo Cazador
-        btIniciarC.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                iniciarCazador();
-            }
-        });
-        btPausaC.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pausarCazador();
-            }
-        });
-        btTerminarC.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                terminarCazador();
-            }
-        });
+        btIniciarC.addActionListener(e -> iniciarCazador());
+        btPausaC.addActionListener(e -> pausarCazador());
+        btTerminarC.addActionListener(e -> terminarCazador());
 
-        // Eventos Hilo Rebotador
-        btIniciarR.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                iniciarRebotador();
-            }
-        });
-        btPausaR.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pausarRebotador();
-            }
-        });
-        btTerminarR.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                terminarRebotador();
-            }
-        });
+        btIniciarR.addActionListener(e -> iniciarRebotador());
+        btPausaR.addActionListener(e -> pausarRebotador());
+        btTerminarR.addActionListener(e -> terminarRebotador());
 
-        // Eventos Hilo Clima
-        btIniciarCl.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                iniciarClima();
-            }
-        });
-        btPausaCl.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pausarClima();
-            }
-        });
-        btTerminarCl.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                terminarClima();
-            }
-        });
+        btIniciarCl.addActionListener(e -> iniciarClima());
+        btPausaCl.addActionListener(e -> pausarClima());
+        btTerminarCl.addActionListener(e -> terminarClima());
 
-        // Eventos Hilo Limpiador
-        btIniciarL.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                iniciarLimpiador();
-            }
-        });
-        btPausaL.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                pausarLimpiador();
-            }
-        });
-        btTerminarL.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                terminarLimpiador();
-            }
-        });
+        btIniciarL.addActionListener(e -> iniciarLimpiador());
+        btPausaL.addActionListener(e -> pausarLimpiador());
+        btTerminarL.addActionListener(e -> terminarLimpiador());
     }
 
     // -----------------------------------------------------------------
@@ -276,12 +194,14 @@ public class VentanaMatrizHilos extends JFrame {
         int col = 0;
         String r = JOptionPane.showInputDialog(this,
                 "¿En qué celda empieza? (fila,columna del 1 al 15)", "1,1");
-        if (r == null) return;
+        if (r == null) {
+            return;
+        }
         try {
             String[] partes = r.split(",");
             fila = Integer.parseInt(partes[0].trim()) - 1;
             col = Integer.parseInt(partes[1].trim()) - 1;
-            if (fila < 0 || fila >= 15 || col < 0 || col >= 15) {
+            if (fila < 0 || fila >= TAM_MATRIZ || col < 0 || col >= TAM_MATRIZ) {
                 throw new IllegalArgumentException();
             }
         } catch (Exception ex) {
@@ -292,28 +212,28 @@ public class VentanaMatrizHilos extends JFrame {
 
         hser = new HiloSerpiente(matriz, 60, fila, col);
         hser.start();
-        btPausaS.setText("Pausa");
+        btPausaS.setText(TXT_PAUSA);
     }
 
     private void pausarSerpiente() {
         if (hser == null || !hser.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         boolean pausar = !hser.isPausado();
         hser.setPausado(pausar);
-        btPausaS.setText(pausar ? "Continuar" : "Pausa");
+        btPausaS.setText(pausar ? TXT_CONTINUAR : TXT_PAUSA);
     }
 
     private void terminarSerpiente() {
         if (hser == null || !hser.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Serpiente no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         hser.setTerminado(true);
-        btPausaS.setText("Pausa");
+        btPausaS.setText(TXT_PAUSA);
     }
 
     // -----------------------------------------------------------------
@@ -326,35 +246,35 @@ public class VentanaMatrizHilos extends JFrame {
         }
         hcaz = new HiloCazador(matriz, panelCazador, 60);
         hcaz.start();
-        btPausaC.setText("Pausa");
+        btPausaC.setText(TXT_PAUSA);
     }
 
     private void pausarCazador() {
         if (hcaz == null || !hcaz.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         boolean pausar = !hcaz.isPausado();
         hcaz.setPausado(pausar);
-        btPausaC.setText(pausar ? "Continuar" : "Pausa");
+        btPausaC.setText(pausar ? TXT_CONTINUAR : TXT_PAUSA);
     }
 
     private void terminarCazador() {
         if (hcaz == null || !hcaz.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Cazador no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         hcaz.setTerminado(true);
-        btPausaC.setText("Pausa");
+        btPausaC.setText(TXT_PAUSA);
     }
 
     // -----------------------------------------------------------------
     // Métodos privados para manejo de eventos (Rebotador)
     // -----------------------------------------------------------------
     private void iniciarRebotador() {
-        System.out.println("Evento: Iniciar Rebotador");
+        LOGGER.info("Evento: Iniciar Rebotador");
         if (hreb == null || !hreb.isAlive()) {
             hreb = new HiloRebotador(matriz);
             hreb.start();
@@ -364,14 +284,14 @@ public class VentanaMatrizHilos extends JFrame {
     }
 
     private void pausarRebotador() {
-        System.out.println("Evento: Pausar Rebotador");
+        LOGGER.info("Evento: Pausar Rebotador");
         if (hreb != null) {
             hreb.pausarHilo();
         }
     }
 
     private void terminarRebotador() {
-        System.out.println("Evento: Terminar Rebotador");
+        LOGGER.info("Evento: Terminar Rebotador");
         if (hreb != null) {
             hreb.terminarHilo();
             hreb = null;
@@ -387,21 +307,21 @@ public class VentanaMatrizHilos extends JFrame {
             hcli.start();
         }
         hcli.iniciarHilo();
-        System.out.println("Evento: Iniciar Clima");
+        LOGGER.info("Evento: Iniciar Clima");
     }
 
     private void pausarClima() {
         if (hcli != null) {
             hcli.pausarHilo();
         }
-        System.out.println("Evento: Pausar Clima");
+        LOGGER.info("Evento: Pausar Clima");
     }
 
     private void terminarClima() {
         if (hcli != null) {
             hcli.terminarHilo();
         }
-        System.out.println("Evento: Terminar Clima");
+        LOGGER.info("Evento: Terminar Clima");
     }
 
     // -----------------------------------------------------------------
@@ -414,28 +334,28 @@ public class VentanaMatrizHilos extends JFrame {
         }
         hlim = new HiloLimpiador(matriz, 500);
         hlim.start();
-        btPausaL.setText("Pausa");
+        btPausaL.setText(TXT_PAUSA);
     }
 
     private void pausarLimpiador() {
         if (hlim == null || !hlim.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         boolean pausar = !hlim.isPausado();
         hlim.setPausado(pausar);
-        btPausaL.setText(pausar ? "Continuar" : "Pausa");
+        btPausaL.setText(pausar ? TXT_CONTINUAR : TXT_PAUSA);
     }
 
     private void terminarLimpiador() {
         if (hlim == null || !hlim.isAlive()) {
-            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", "Alerta",
+            JOptionPane.showMessageDialog(this, "El hilo Limpiador no existe", TXT_ALERTA,
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
         hlim.setTerminado(true);
-        btPausaL.setText("Pausa");
+        btPausaL.setText(TXT_PAUSA);
     }
 
     public JLabel[][] getMatrizLabels() {
